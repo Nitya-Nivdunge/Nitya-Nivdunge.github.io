@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Periodic Table of Elements</title>
-    <link rel="stylesheet" href="styles.css">
     <style>
         * {
             box-sizing: border-box;
@@ -34,6 +33,9 @@
             justify-content: center;
             margin-bottom: 10px;
             width:100%;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
         }
         
         .filter-dropdown {
@@ -44,8 +46,8 @@
             border: 1px solid #ccc;
             background-color: rgba(255, 255, 255, 0.37);
             cursor: pointer;
-            min-width: 200px;
-            margin-right: 10px;
+            min-width: 175px;
+            align-items: center;
         }
 
         .filter-dropdown:hover {
@@ -95,9 +97,7 @@
             box-shadow: 0 0 50px rgba(0, 0, 0, 0.8);
         }
         
-        .element.dimmed {
-            opacity: 0.3;
-        }
+        .element.dimmed {opacity: 0.3;}
         
         .symbol {
             font-size: 18px;
@@ -121,7 +121,6 @@
             text-overflow: ellipsis;
         }
         
-        /* Element Group Colors */
         .alkali-metals , .legend-item.alkali-metals { background-color: #ff8a65; color: #000000; }
         .alkaline-earth-metals,.legend-item.alkaline-earth-metals { background-color: #ff9720ea; color: #000000;}
         .transition-metals,.legend-item.transition-metals{ background-color: #fbff00e5;color: #000000; }
@@ -139,9 +138,7 @@
             height: 60px;
         }
         
-        .gap {
-            grid-column: span 6;
-        }
+        .gap {grid-column: span 6;}
         
         .legend {
             display: flex;
@@ -184,8 +181,15 @@
                 margin-bottom: 15px;
                 line-height: 1.6;
             }
-        #popup-content h3 {
-            margin-bottom: 20px;
+        #popup-content h3 {margin-bottom: 20px;}
+
+        .property-highlight {
+            background-image: linear-gradient(
+                to bottom right,
+                hsla(var(--property-hue), 100%, 50%, 0.3),
+                hsla(var(--property-hue), 100%, 50%, 0.1)
+            );
+            box-shadow: 0 0 10px hsla(var(--property-hue), 100%, 50%, 0.5);
         }
         
         #popup-close {
@@ -283,6 +287,89 @@
         .legend-color-box.lanthanides { background-color: #f48fb1; }
         .legend-color-box.actinides { background-color: #fc3275; }
         .legend-color-box.unknown { background-color: #ffffffe1; }
+
+        .column-dropdown {
+            display: none;
+            position: absolute;
+            background-color: white;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 10px;
+            z-index: 100;
+            max-height: 300px;
+            overflow-y: auto;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .column-dropdown label {
+            display: block;
+            padding: 5px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .column-dropdown label:hover {background-color: #f0f0f0;}
+
+        .column-dropdown input {margin-right: 8px;}
+
+        #table-view table {white-space: nowrap;}
+
+        #table-view table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        #table-view th, #table-view td {
+            text-align: center;
+            vertical-align: middle;
+            padding: 8px;
+            border: 1px solid #999;
+        }
+
+        .table-header {
+            color: white !important;
+            background-color: #333 !important;
+        }
+
+        .sort-button {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            margin-left: 5px;
+            font-size: 12px;
+        }
+
+        .dark-cell {
+            background-color: #1a1a1a;
+            color: white;
+        }
+
+        .category-cell {color: black;}
+
+        .column-selector-container {
+            position: relative;
+            display: none;
+        }
+
+        .column-dropdown {
+            display: none;
+            position: absolute;
+            background-color: white;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 10px;
+            z-index: 100;
+            max-height: 300px;
+            overflow-y: auto;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .column-dropdown label {
+            display: block;
+            padding: 5px;
+            cursor: pointer;
+        }
+        .column-dropdown label:hover {background-color: #f0f0f0;}
+
     </style>
 </head>
 <body>
@@ -312,6 +399,25 @@
                 <option value="actinides">Actinides</option>
                 <option value="unknown">Unknown Properties</option>
             </select>
+
+            <button id="mode-toggle" class="filter-dropdown" style="display: none;">Toggle Color Mode</button>
+
+            <div id="column-selector-container" class="column-selector-container">
+                <button class="filter-dropdown" onclick="toggleColumnDropdown()">Select Columns ▼</button>
+                <div id="column-dropdown" class="column-dropdown">
+                    <label><input type="checkbox" value="number" checked> Atomic Number</label>
+                    <label><input type="checkbox" value="symbol" checked> Symbol</label>
+                    <label><input type="checkbox" value="name" checked> Name</label>
+                    <label><input type="checkbox" value="atomicMass" checked> Atomic Mass</label>
+                    <label><input type="checkbox" value="atomicRadius"> Atomic Radius</label>
+                    <label><input type="checkbox" value="electronegativity"> Electronegativity</label>
+                    <label><input type="checkbox" value="meltingPoint"> Melting Point</label>
+                    <label><input type="checkbox" value="boilingPoint"> Boiling Point</label>
+                    <label><input type="checkbox" value="density"> Density</label>
+                    <label><input type="checkbox" value="ionizationEnergy"> Ionization Energy</label>
+                </div>
+            </div>
+
         
             <select id="filter-state" class="filter-dropdown">
                 <option value="all">All States</option>
@@ -331,7 +437,6 @@
         
         </div>
 
-
         <div class="periodic-table" id="periodic-table"></div>
         <div id="table-view" style="display: none;"></div>
 
@@ -342,7 +447,6 @@
         <div id="popup-content"></div>
     </div>
 
-    <!-- Legend Popup -->
     <div id="legend-popup" class="popup-overlay">
         <div class="popup-content">
             <span class="popup-close" onclick="closeLegendPopup()">&times;</span>
@@ -369,9 +473,9 @@
             { number: 1, symbol: 'H', name: 'Hydrogen', block: "s",state: 'gases',category: 'other-nonmetals', row: 1, col: 1,atomicMass: 1.0080,cpkHexColor: 'FFFFFF',electronConfig: '1s1',electronegativity: 2.2,atomicRadius: 120,ionizationEnergy: 13.598,electronAffinity: 0.754,oxidationStates: '+1, -1',standardState: 'Gas',meltingPoint: 13.81,boilingPoint: 20.28,density: 0.00008988,groupBlock: 'Nonmetal',yearDiscovered: 1766},
             { number: 2, symbol: 'He', name: 'Helium', block: "p",state: 'gases',category: 'noble-gases', row: 1, col: 18,atomicMass: 4.00260,cpkHexColor: 'D9FFFF',electronConfig: '1s2',electronegativity: null,atomicRadius: 140,ionizationEnergy: 24.587,electronAffinity: null,oxidationStates: '0',standardState: 'Gas',meltingPoint: 0.95,boilingPoint: 4.22,density: 0.0001785,groupBlock: 'Noble gas',yearDiscovered: 1868},
             { number: 3, symbol: 'Li', name: 'Lithium', block: "s",state: 'solids',category: 'alkali-metals', row: 2, col: 1,atomicMass: 7.0,cpkHexColor: 'CC80FF',electronConfig: '[He]2s1',electronegativity: 0.98,atomicRadius: 182,ionizationEnergy: 5.392,electronAffinity: 0.618,oxidationStates: '+1',standardState: 'Solid',meltingPoint: 453.65,boilingPoint: 1615,density: 0.534,groupBlock: 'Alkali metal',yearDiscovered: 1817},
-            { number: 4, symbol: 'Be', name: 'Beryllium', block: "p",state: 'solids',category: 'alkaline-earth-metals', row: 2, col: 2,atomicMass: 9.012183,cpkHexColor: 'C2FF00',electronConfig: '[He]2s2',electronegativity: 1.57,atomicRadius: 153,ionizationEnergy: 9.323,electronAffinity: null,oxidationStates: '+2',standardState: 'Solid',meltingPoint: 1560,boilingPoint: 2744,density: 1.85,groupBlock: 'Alkaline earth metal',yearDiscovered: 1798},
+            { number: 4, symbol: 'Be', name: 'Beryllium', block: "s",state: 'solids',category: 'alkaline-earth-metals', row: 2, col: 2,atomicMass: 9.012183,cpkHexColor: 'C2FF00',electronConfig: '[He]2s2',electronegativity: 1.57,atomicRadius: 153,ionizationEnergy: 9.323,electronAffinity: null,oxidationStates: '+2',standardState: 'Solid',meltingPoint: 1560,boilingPoint: 2744,density: 1.85,groupBlock: 'Alkaline earth metal',yearDiscovered: 1798},
             { number: 5, symbol: 'B', name: 'Boron', block: "p",state: 'solids',category: 'metalloids', row: 2, col: 13,atomicMass: 10.81,cpkHexColor: 'FFB5B5',electronConfig: '[He]2s2 2p1',electronegativity: 2.04,atomicRadius: 192,ionizationEnergy: 8.298,electronAffinity: 0.277,oxidationStates: '+3',standardState: 'Solid',meltingPoint: 2348,boilingPoint: 4273,density: 2.37,groupBlock: 'Metalloid',yearDiscovered: 1808},
-            { number: 6, symbol: 'C', name: 'Carbon', block: "p",state: 'solids',category: 'other-nonmetals', row: 2, col: 14,atomicMass: 12.011,cpkHexColor: '909090',electronConfig: '[He]2s2 2p2',electronegativity: 2.55,atomicRadius: 170,ionizationEnergy: 11.260,electronAffinity: 1.263,oxidationStates: '+4, +2, -4',standardState: 'Solid',meltingPoint: 3823,boilingPoint: 4098,density: 2.2670,groupBlock: 'Nonmetal',yearDiscovered: 'Ancient'},
+            { number: 6, symbol: 'C', name: 'Carbon', block: "p",state: 'solids',category: 'other-nonmetals', row: 2, col: 14,atomicMass: 12.011,cpkHexColor: '909090',electronConfig: '[He]2s2 2p2',electronegativity: 2.55,atomicRadius: 170,ionizationEnergy: 11.260,electronAffinity: 1.263,oxidationStates: '+4, +2, -4',standardState: 'Solid',meltingPoint: 3550,boilingPoint: 4098,density: 2.2670,groupBlock: 'Nonmetal',yearDiscovered: 'Ancient'},
             { number: 7, symbol: 'N', name: 'Nitrogen', block: "p",state: 'gases',category: 'other-nonmetals', row: 2, col: 15,atomicMass: 14.007,cpkHexColor: '3050F8',electronConfig: '[He] 2s2 2p3',electronegativity: 3.04,atomicRadius: 155,ionizationEnergy: 14.534,electronAffinity: null,oxidationStates: '+5, +4, +3, +2, +1, -1, -2, -3',standardState: 'Gas',meltingPoint: 63.15,boilingPoint: 77.36,density: 0.0012506,groupBlock: 'Nonmetal',yearDiscovered: 1772},
             { number: 8, symbol: 'O', name: 'Oxygen', block: "p",state: 'gases',category: 'other-nonmetals', row: 2, col: 16,atomicMass: 15.999,cpkHexColor: 'FF0D0D',electronConfig: '[He]2s2 2p4',electronegativity: 3.44,atomicRadius: 152,ionizationEnergy: 13.618,electronAffinity: 1.461,oxidationStates: '-2',standardState: 'Gas',meltingPoint: 54.36,boilingPoint: 90.2,density: 0.001429,groupBlock: 'Nonmetal',yearDiscovered: 1774},
             { number: 9, symbol: 'F', name: 'Fluorine', block: "p",state: 'gases',category: 'halogens', row: 2, col: 17,atomicMass: 18.99840316,cpkHexColor: '90E050',electronConfig: '[He]2s2 2p5',electronegativity: 3.98,atomicRadius: 135,ionizationEnergy: 17.423,electronAffinity: 3.339,oxidationStates: '-1',standardState: 'Gas',meltingPoint: 53.53,boilingPoint: 85.03,density: 0.001696,groupBlock: 'Halogen',yearDiscovered: 1670},
@@ -497,7 +601,7 @@
             { number: 118, symbol: 'Og', name: 'Oganesson', block: "p",state: 'synthetic',category: 'noble-gases', row: 7, col: 18,atomicMass: 295.216, cpkHexColor: '', electronConfig: '[Rn]7s2 7p6 5f14 6d10 (predicted)', electronegativity: '', atomicRadius: '', ionizationEnergy: '', electronAffinity: '', oxidationStates: '+6, +4, +2, +1, 0, -1', standardState: 'Expected to be a Gas', meltingPoint: '', boilingPoint: '', density: '', groupBlock: 'Noble gas', yearDiscovered: 2006 }
         ];
 
-    document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', () => {
         generatePeriodicTable();
         setupPopup();
         setupLegendFilters();
@@ -602,27 +706,26 @@
     }
 
     function showElementDetails(element) {
-            const popup = document.getElementById('element-popup');
-            const content = document.getElementById('popup-content');
-            
-            content.innerHTML = `
-                <h3>${element.name} (${element.symbol})</h3>
-                <p><strong>Atomic Number:</strong> ${element.number}</p>
-                <p><strong>Atomic Mass:</strong> ${element.atomicMass || 'Unknown'}</p>
-                <p><strong>Category:</strong> ${element.category || 'Unknown'}</p>
-                <p><strong>Block:</strong> ${element.block}-block</p>
-                <p><strong>State at STP:</strong> ${element.standardState || 'Unknown'}</p>
-                <p><strong>Electron Configuration:</strong> ${element.electronConfig}</p>
-                <p><strong>Electronegativity:</strong> ${element.electronegativity || 'Unknown'}</p>
-                <p><strong>Melting Point:</strong> ${element.meltingPoint || 'Unknown'} K</p>
-                <p><strong>Boiling Point:</strong> ${element.boilingPoint || 'Unknown'} K</p>
-                <p><strong>Density:</strong> ${element.density || 'Unknown'} g/cm³</p>
-                <p><strong>Year Discovered:</strong> ${element.yearDiscovered || 'Unknown'}</p>
-            `;
-            
-            popup.style.display = 'block';
-        }
-
+        const popup = document.getElementById('element-popup');
+        const content = document.getElementById('popup-content');
+        
+        content.innerHTML = `
+            <h3>${element.name} (${element.symbol})</h3>
+            <p><strong>Atomic Number:</strong> ${element.number}</p>
+            <p><strong>Atomic Mass:</strong> ${element.atomicMass || 'Unknown'}</p>
+            <p><strong>Category:</strong> ${element.category || 'Unknown'}</p>
+            <p><strong>Block:</strong> ${element.block}-block</p>
+            <p><strong>State at STP:</strong> ${element.standardState || 'Unknown'}</p>
+            <p><strong>Electron Configuration:</strong> ${element.electronConfig}</p>
+            <p><strong>Electronegativity:</strong> ${element.electronegativity || 'Unknown'}</p>
+            <p><strong>Melting Point:</strong> ${element.meltingPoint || 'Unknown'} K</p>
+            <p><strong>Boiling Point:</strong> ${element.boilingPoint || 'Unknown'} K</p>
+            <p><strong>Density:</strong> ${element.density || 'Unknown'} g/cm³</p>
+            <p><strong>Year Discovered:</strong> ${element.yearDiscovered || 'Unknown'}</p>
+        `;
+        
+        popup.style.display = 'block';
+    }
 
     function formatCategory(category) {
         return category.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
@@ -645,19 +748,84 @@
 
         document.getElementById('filter-structure').addEventListener('change', () => {
             const view = document.getElementById('filter-structure').value;
-            const diagram = document.getElementById('periodic-table');
-            const tableView = document.getElementById('table-view');
-
-            if (view === 'diagram') {
-                diagram.style.display = 'grid';
-                tableView.style.display = 'none';
-            } else {
-                diagram.style.display = 'none';
-                tableView.style.display = 'block';
-            }
-
+            toggleViewMode(view);
             applyFilters();
         });
+
+        const defaultColumns = ['number', 'symbol', 'name', 'atomicMass'];
+        document.querySelectorAll('#column-dropdown input').forEach(checkbox => {
+            checkbox.checked = defaultColumns.includes(checkbox.value);
+        });
+
+        document.querySelectorAll('#column-dropdown input').forEach(checkbox => {
+            checkbox.addEventListener('change', () => {
+                if (document.getElementById('filter-structure').value === 'table') {
+                    applyFilters();
+                }
+            });
+        });
+
+        document.getElementById('mode-toggle').addEventListener('click', () => {
+            colorMode = colorMode === 'category' ? 'dark' : 'category';
+            if (document.getElementById('filter-structure').value === 'table') {
+                applyFilters();
+            }
+        });
+    }
+
+    function toggleViewMode(view) {
+        const diagram = document.getElementById('periodic-table');
+        const tableView = document.getElementById('table-view');
+        const columnSelector = document.getElementById('column-selector-container');
+        const colorToggle = document.getElementById('mode-toggle');
+        const filterContainer = document.querySelector('.filter-container');
+        
+        if (view === 'diagram') {
+            diagram.style.display = 'grid';
+            tableView.style.display = 'none';
+            columnSelector.style.display = 'none';
+            colorToggle.style.display = 'none';
+            filterContainer.style.flexDirection = 'row';
+            filterContainer.style.flexWrap = 'wrap';
+        } else {
+            diagram.style.display = 'none';
+            tableView.style.display = 'block';
+            columnSelector.style.display = 'block';
+            colorToggle.style.display = 'block';
+            
+            filterContainer.style.flexDirection = 'column';
+            
+            const structureSelect = document.getElementById('filter-structure');
+            const clearButton = document.querySelector('.filter-dropdown[onclick="clearFilters()"]');
+            const infoButton = document.querySelector('.filter-dropdown[onclick="showLegendPopup()"]');
+            
+            const firstLine = document.createElement('div');
+            firstLine.style.display = 'flex';
+            firstLine.style.gap = '10px';
+            firstLine.style.marginBottom = '10px';
+            firstLine.style.alignItems = 'center';
+            firstLine.style.alignContent = 'center';
+            
+            const secondLine = document.createElement('div');
+            secondLine.style.display = 'flex';
+            secondLine.style.gap = '10px';
+            secondLine.style.alignItems = 'center';
+            secondLine.style.alignContent = 'center';
+
+            firstLine.appendChild(structureSelect);
+            firstLine.appendChild(document.getElementById('filter-category'));
+            firstLine.appendChild(document.getElementById('filter-state'));
+            firstLine.appendChild(document.getElementById('filter-block'));
+            firstLine.appendChild(columnSelector);
+            
+            secondLine.appendChild(infoButton);
+            secondLine.appendChild(colorToggle);
+            secondLine.appendChild(clearButton);
+            
+            filterContainer.innerHTML = '';
+            filterContainer.appendChild(firstLine);
+            filterContainer.appendChild(secondLine);
+        }
     }
 
     function applyFilters() {
@@ -665,7 +833,6 @@
         const state = document.getElementById('filter-state').value;
         const block = document.getElementById('filter-block').value;
         const view = document.getElementById('filter-structure').value;
-
         const visibleElements = [];
 
         document.querySelectorAll('.element').forEach(el => {
@@ -695,48 +862,103 @@
         applyFilters();
     }
 
-    function renderTableView(filtered = elements) {
+    let colorMode = "category";
+
+    function getSelectedColumns() {
+        const checkboxes = document.querySelectorAll('#column-dropdown input[type="checkbox"]:checked');
+        return Array.from(checkboxes).map(cb => cb.value);
+    }
+
+    function getCategoryColor(category) {
+        const colors = {
+            "alkali-metals": "#ff8a65",
+            "alkaline-earth-metals": "#ff9720ea",
+            "transition-metals": "#fbff00e5",
+            "post-transition-metals": "hsl(88, 100%, 66%)",
+            "metalloids": "#41b947",
+            "other-nonmetals": "#299ed4",
+            "halogens": "#80deea",
+            "noble-gases": "#9575cd",
+            "lanthanides": "#f48fb1",
+            "actinides": "#fc3275",
+            "unknown": "#ffffff"
+        };
+        return colors[category] || "#ffffff";
+    }
+
+    function renderTableView(filteredElements = elements) {
         const container = document.getElementById('table-view');
         container.innerHTML = '';
 
-        const table = document.createElement('table');
-        table.style.width = '100%';
-        table.style.borderCollapse = 'collapse';
-        table.style.backgroundColor = '#121212';  
-        table.style.color = '#ffffff';            
-        table.style.border = '2px solid #333';
+        const selectedColumns = getSelectedColumns();
+        if (selectedColumns.length === 0) {
+            container.innerHTML = '<p>No columns selected</p>';
+            return;
+        }
 
+        const table = document.createElement('table');
         const thead = document.createElement('thead');
-        thead.innerHTML = `
-            <tr style="background-color: #222;">
-                <th style="padding: 10px; border: 1px solid #444;">#</th>
-                <th style="padding: 10px; border: 1px solid #444;">Symbol</th>
-                <th style="padding: 10px; border: 1px solid #444;">Name</th>
-                <th style="padding: 10px; border: 1px solid #444;">Block</th>
-                <th style="padding: 10px; border: 1px solid #444;">State</th>
-                <th style="padding: 10px; border: 1px solid #444;">Category</th>
-            </tr>
-        `;
+        const headerRow = document.createElement('tr');
+
+        selectedColumns.forEach(col => {
+            const th = document.createElement('th');
+            th.className = 'table-header';
+            th.innerHTML = `
+                ${col.charAt(0).toUpperCase() + col.slice(1)}
+                <button class="sort-button" onclick="sortTable('${col}', true)">↑</button>
+                <button class="sort-button" onclick="sortTable('${col}', false)">↓</button>
+            `;
+            headerRow.appendChild(th);
+        });
+        thead.appendChild(headerRow);
         table.appendChild(thead);
 
         const tbody = document.createElement('tbody');
-        filtered.forEach(el => {
+        filteredElements.forEach(element => {
             const row = document.createElement('tr');
-            row.style.backgroundColor = '#1c1c1c';
-            row.innerHTML = `
-                <td style="padding: 8px; border: 1px solid #333;">${el.number}</td>
-                <td style="padding: 8px; border: 1px solid #333;">${el.symbol}</td>
-                <td style="padding: 8px; border: 1px solid #333;">${el.name}</td>
-                <td style="padding: 8px; border: 1px solid #333;">${el.block}</td>
-                <td style="padding: 8px; border: 1px solid #333;">${el.state}</td>
-                <td style="padding: 8px; border: 1px solid #333;">${formatCategory(el.category)}</td>
-            `;
+            selectedColumns.forEach(col => {
+                const td = document.createElement('td');
+                td.textContent = element[col] || '';
+                
+                if (colorMode === 'dark') {
+                    td.className = 'dark-cell';
+                } else {
+                    td.style.backgroundColor = getCategoryColor(element.category);
+                    td.className = 'category-cell';
+                }
+                
+                row.appendChild(td);
+            });
             tbody.appendChild(row);
         });
 
         table.appendChild(tbody);
         container.appendChild(table);
     }
+
+    function sortTable(column, ascending = true) {
+        const view = document.getElementById('filter-structure').value;
+        if (view !== 'table') return;
+        
+        const filteredElements = getFilteredElements();
+        filteredElements.sort((a, b) => {
+            const valA = a[column] ?? '';
+            const valB = b[column] ?? '';
+            return (valA > valB ? 1 : valA < valB ? -1 : 0) * (ascending ? 1 : -1);
+        });
+        renderTableView(filteredElements);
+    }
+
+    function toggleColumnDropdown() {
+        const dropdown = document.getElementById('column-dropdown');
+        dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+    }
+
+    document.addEventListener('click', function(event) {
+        if (!event.target.closest('#column-selector-container')) {
+            document.getElementById('column-dropdown').style.display = 'none';
+        }
+    });
 
     function showLegendPopup() {
         document.getElementById('legend-popup').style.display = 'flex';
@@ -745,6 +967,21 @@
     function closeLegendPopup() {
         document.getElementById('legend-popup').style.display = 'none';
     }
+
+    function getFilteredElements() {
+        const category = document.getElementById('filter-category').value;
+        const state = document.getElementById('filter-state').value;
+        const block = document.getElementById('filter-block').value;
+        
+        return elements.filter(element => {
+            const matchesCategory = (category === 'all' || element.category === category);
+            const matchesState = (state === 'all' || element.state === state);
+            const matchesBlock = (block === 'all' || element.block === block);
+            return matchesCategory && matchesState && matchesBlock;
+        });
+    }
+
+    toggleViewMode('diagram');
 </script>
 
 </body>
